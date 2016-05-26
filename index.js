@@ -82,10 +82,10 @@ function onIntent(intentRequest, session, callback) {
         intentName = intentRequest.intent.name;
 
     // Dispatch to your skill's intent handlers
-    if ("MyColorIsIntent" === intentName) {
-        setColorInSession(intent, session, callback);
-    } else if ("WhatsMyColorIntent" === intentName) {
-        getColorFromSession(intent, session, callback);
+    if ("MyChoreIntent" === intentName) {
+        setChoreInSession(intent, session, callback);
+    } else if ("WhatsMyChoreIntent" === intentName) {
+        getChoreFromSession(intent, session, callback);
     } else if ("AMAZON.HelpIntent" === intentName) {
         getWelcomeResponse(callback);
     } else if ("AMAZON.StopIntent" === intentName || "AMAZON.CancelIntent" === intentName) {
@@ -114,9 +114,9 @@ function getWelcomeResponse(callback) {
     var speechOutput = "Welcome to Room Score! Would you like to hear your chores or maybe even check your shopping list?";
     // If the user either does not reply to the welcome message or says something that is not
     // understood, they will be prompted again with this text.
-    var repromptText = "Please tell me your favorite color by saying, " +
-        "my favorite color is red";
-    var shouldEndSession = false;
+    var repromptText = "Please tell me your main Chore by saying, " +
+        "my main Chore is red";
+    var shouldEndSession = true;
 
     callback(sessionAttributes,
         buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
@@ -124,7 +124,7 @@ function getWelcomeResponse(callback) {
 
 function handleSessionEndRequest(callback) {
     var cardTitle = "Session Ended";
-    var speechOutput = "Thank you for trying the Alexa Skills Kit sample. Have a nice day!";
+    var speechOutput = "Thanks for using RoomScore. Have a good day!";
     // Setting this to true ends the session and exits the skill.
     var shouldEndSession = true;
 
@@ -132,41 +132,46 @@ function handleSessionEndRequest(callback) {
 }
 
 /**
- * Sets the color in the session and prepares the speech to reply to the user.
+ * Sets the Chore in the session and prepares the speech to reply to the user.
  */
 
  ///
-function setColorInSession(intent, session, callback) {
+function setChoreInSession(intent, session, callback) {
     var cardTitle = intent.name;
-    var favoriteColorSlot = intent.slots.Color;
+    var mainChoreSlot = intent.slots.Tasks;
     var repromptText = "";
     var sessionAttributes = {};
-    var shouldEndSession = false;
+    var shouldEndSession = true;
     var speechOutput = "";
-
-    if (favoriteColorSlot) {
-        var favoriteColor = favoriteColorSlot.value;
-        sessionAttributes = createFavoriteColorAttributes(favoriteColor);
-        speechOutput = "Take out the trash";
-        repromptText = "You can ask me your favorite color by saying, what's my favorite color?";
+    // Testing Samples, Real Chores will be pulled from Application List and assigned to x
+    x= ["Take Out the Trash", "Clean the Toilet", "Walk The Dog"]; 
+    var newtalk = "";
+    if (mainChoreSlot) {
+        var mainChore = mainChoreSlot.value;
+        sessionAttributes = createmainChoreAttributes(mainChore);
+        
+        for(var i=0; i<x.length;i++){
+            newtalk = newtalk + x[i] + ", ";
+        }
+        speechOutput = "You have "+ x.length + " chores. " + newtalk;
+        repromptText = "I'm Sorry, did you want to know your chores? ";
     } else {
-        speechOutput = "I'm not sure what your favorite color is. Please try again";
-        repromptText = "I'm not sure what your favorite color is. You can tell me your " +
-            "favorite color by saying, my favorite color is red";
+        speechOutput = "Please say that again?";
+        repromptText = "Didn't Hear you, try again";
     }
 
     callback(sessionAttributes,
          buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
 }
 
-function createFavoriteColorAttributes(favoriteColor) {
+function createmainChoreAttributes(mainChore) {
     return {
-        favoriteColor: favoriteColor
+        mainChore: mainChore
     };
 }
 
-function getColorFromSession(intent, session, callback) {
-    var favoriteColorSlots = intent.slots.Users;
+function getChoreFromSession(intent, session, callback) {
+    var mainChoreSlots = intent.slots.Users;
     var favWork = intent.slots.Chores;
     var favShop = intent.slots.Shop;
     var repromptText = null;
@@ -176,71 +181,19 @@ function getColorFromSession(intent, session, callback) {
     var cardTitle = "RoomScore"
 
     if (session.attributes) {
-        favoriteColor = session.attributes.favoriteColor;
+        mainChore = session.attributes.mainChore;
     }
 
-    if (favoriteColorSlots) {
+    if (mainChoreSlots) {
 
-        speechOutput = "Assigning " + favWork.value + " to the chore list of " + favoriteColorSlots.value ; //adding chore to user
+        speechOutput = "Assigning " + favWork.value + " to the chore list of " + mainChoreSlots.value ; //adding chore to user
         shouldEndSession = true;
         
-        var dataObj = {
-            description: favWork.value,
-            type: 'chore',
-            status: 'pending',
-            room: '1',
-            author: 'Rohit',
-            assignees: [
-                'Udit'
-            ],
-            dateCreated: '2016-05-08',
-            dateDue: '2016-05-10'
-        }
-        
-        var messageString = queryString.stringify(dataObj);
-
-        var options = {
-            host: 'http://roomscore.tech:3001',
-            path: '/api/tasks',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        } 
-      
-           // Setup the HTTP request
-    var req = https.request(options, function (res) {
-         // Collect response data as it comes back.
-        var responseString = '';
-        
-
-        res.setEncoding('utf-8');
-              
-        
-        res.on('data', function (data) {
-            responseString += data;
-        });
-         console.log('RoomScore Response: ' + responseString);
-        // Log the responce received from RS.
-        // Or could use JSON.parse(responseString) here to get at individual properties.
-        res.on('end', function () {
-            console.log('RoomScore Response: ' + responseString);
-            callback(sessionAttributes,
-             buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
-        });
-    });
-
-    console.log('Twilio API call: ' + messageString);
-    req.write(messageString);
-    req.end();
-
-        console.log("End: "+ req);
-            
-        console.log(speechOutput);
-//        callback(sessionAttributes,
-  //           buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+     
+       callback(sessionAttributes,
+            buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
     
-    } // if favouriteColorSlots
+    } 
 }
 // --------------- Helpers that build all of the responses -----------------------
 
