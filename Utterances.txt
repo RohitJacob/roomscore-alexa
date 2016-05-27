@@ -1,0 +1,5 @@
+MyChoreIsIntent What chores do I have today
+MyChoreIsIntent Tell me my Chores
+MyChoreIsIntent Chores to do
+WhatsMyChoreIntent Ask {Users} to {Chores}
+WhatsMyChoreIntent Remind {Users} to {Chores}

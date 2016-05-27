@@ -1,0 +1,31 @@
+{
+  "intents": [
+    {
+      "intent": "MyColorIsIntent",
+      "slots": [
+        {
+          "name": "Tasks",
+          "type": "list_tasks"
+        }
+      ]
+    },{
+      "intent": "WhatsMyColorIntent",
+      "slots": [
+        {
+          "name": "Users",
+          "type": "list_users"
+        },
+        { 
+          "name": "Chores",
+          "type": "new_list"
+        },{ 
+          "name": "XYZ",
+          "type": "list_tasknames"
+        },{ 
+          "name": "Shop",
+          "type": "list_items"
+        }
+      ]
+    }
+  ]
+}
